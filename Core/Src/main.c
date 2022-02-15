@@ -39,7 +39,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart2;
+
 
 /* USER CODE BEGIN PV */
 
@@ -81,14 +81,18 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+#ifdef __DEBUG__
+  Set_UART_Redirection_Port(&huart2);
+#endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+#ifdef __DEBUG__
+  printf("Debug\r\n");
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
