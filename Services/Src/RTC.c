@@ -62,6 +62,39 @@ HAL_StatusTypeDef RTC_Init(RTC_Date_t RTC_Date, SQW_t squareWave)
 	return state;
 }
 
+HAL_StatusTypeDef RTC_changeHourMode(void)
+{
+	HAL_StatusTypeDef state;
+	uint8_t tmp[3];
+	state = RTC_getHour(&tmp[0], &tmp[1], &tmp[2]);
+
+	if(tmp[1])
+	{
+		//passage en mode 12H
+		if(tmp[0] > 12)
+		{
+			tmp[2] = PM_12H;
+		}
+		else
+		{
+			tmp[2] = AM_12H;
+		}
+		tmp[0] %= 12;
+		tmp[1] = HOUR_TYPE_12H;
+	}
+	else
+	{
+		if(tmp[2] == PM_12H)
+		{
+			tmp[0] = bin2bcd(bcd2bin(tmp[0])+12);
+		}
+		tmp[2] = AM_PM_NONE;
+		tmp[1] = HOUR_TYPE_24H;
+	}
+
+	state = RTC_setHour(tmp[0], tmp[1], tmp[2]);
+	return state;
+}
 
 /***************************************************************************************/
 /************************************** GETTERS ****************************************/
@@ -160,39 +193,6 @@ HAL_StatusTypeDef RTC_getSeconds(uint8_t * seconds)
 	return state;
 }
 
-HAL_StatusTypeDef RTC_changeHourMode(void)
-{
-	HAL_StatusTypeDef state;
-	uint8_t tmp[3];
-	state = RTC_getHour(&tmp[0], &tmp[1], &tmp[2]);
-
-	if(tmp[1])
-	{
-		//passage en mode 12H
-		if(tmp[0] > 12)
-		{
-			tmp[2] = PM_12H;
-		}
-		else
-		{
-			tmp[2] = AM_12H;
-		}
-		tmp[0] %= 12;
-		tmp[1] = HOUR_TYPE_12H;
-	}
-	else
-	{
-		if(tmp[2] == PM_12H)
-		{
-			tmp[0] = bin2bcd(bcd2bin(tmp[0])+12);
-		}
-		tmp[2] = AM_PM_NONE;
-		tmp[1] = HOUR_TYPE_24H;
-	}
-
-	state = RTC_setHour(tmp[0], tmp[1], tmp[2]);
-	return state;
-}
 
 /***************************************************************************************/
 /************************************** SETTERS ****************************************/
@@ -325,7 +325,14 @@ HAL_StatusTypeDef RTC_setSeconds(uint8_t seconds)
 
 	state = HAL_I2C_Master_Transmit(&hi2c1, RTC_addr, buf, 1, HAL_MAX_DELAY);
 	state = HAL_I2C_Master_Receive(&hi2c1, RTC_addr, &buf[1], 1, HAL_MAX_DELAY);
-	buf[1] |= bin2bcd(seconds);
+	if((buf[1]&0x80)>>7)
+	{
+		buf[1] = bin2bcd(seconds)|0x80;
+	}
+	else
+	{
+		buf[1] = bin2bcd(seconds)&0x7F;
+	}
 	state = HAL_I2C_Master_Transmit(&hi2c1, RTC_addr, buf, 2, HAL_MAX_DELAY);
 	return state;
 }
