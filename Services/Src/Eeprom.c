@@ -108,11 +108,12 @@ HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint8_t length)
 	HAL_StatusTypeDef state;
 	uint8_t buf[length+4];
 
-	buf[0] = WRITE;
 
 	if((addr&0xFF) + length >= EE_SIZE_PAGE)
 	{
 		//Ecriture au dela de la fin de la page
+		buf[0] = WRITE;
+
 		//address setting 24 bits of address
 		buf[1] = (addr >> 16) & 0x07;
 		buf[2] = (addr >> 8) & 0xFF;
@@ -126,8 +127,6 @@ HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint8_t length)
 		while(EE_isEEPROMBusy());
 
 		state = EE_SetWriteEnable();
-
-		while(EE_isEEPROMBusy());
 
 		state = HAL_SPI_Transmit(&hspi2, buf, (EE_SIZE_PAGE - (addr&0xFF)) + 4, HAL_MAX_DELAY);
 
@@ -156,13 +155,17 @@ HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint8_t length)
 
 		state = EE_SetWriteEnable();
 
+		state = HAL_SPI_Transmit(&hspi2, buf, length - (EE_SIZE_PAGE - (addr&0xFF)) + 4, HAL_MAX_DELAY);
+
+		EE_SPI_Disable();
 		while(EE_isEEPROMBusy());
 
-		state = HAL_SPI_Transmit(&hspi2, buf, length - (EE_SIZE_PAGE - (addr&0xFF)) + 4, HAL_MAX_DELAY);
 	}
 	else
 	{
 		//Ecriture sur une page
+		buf[0] = WRITE;
+
 		//address setting 24 bits of address
 		buf[1] = (addr >> 16) & 0x0F;
 		buf[2] = (addr >> 8) & 0xFF;
@@ -177,12 +180,13 @@ HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint8_t length)
 
 		state = EE_SetWriteEnable();
 
-		while(EE_isEEPROMBusy());
-
 		state = HAL_SPI_Transmit(&hspi2, buf, length+4, HAL_MAX_DELAY);
+
+		EE_SPI_Disable();
+
+		while(EE_isEEPROMBusy());
 	}
 
-	EE_SPI_Disable();
 
 	return state;
 }
@@ -191,60 +195,16 @@ HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint8_t length)
 {
 	HAL_StatusTypeDef state;
 	uint8_t send[4], receive[length];
+	//Lecture sur une page
+	send[0] = READ;
 
-	if((addr & 0xFF) + length >= EE_SIZE_PAGE)
-	{
-		//Lecture sur 2 pages
-		send[0] = READ;
+	//address setting 24 bits of address
+	send[1] = (addr >> 16) & 0x0F;
+	send[2] = (addr >> 8) & 0xFF;
+	send[3] = addr & 0xFF;
 
-		//address setting 24 bits of address
-		send[1] = (addr >> 16) & 0x0F;
-		send[2] = (addr >> 8) & 0xFF;
-		send[3] = addr & 0xFF;
-
-		while(EE_isEEPROMBusy());
-
-		state = HAL_SPI_Transmit(&hspi2, send, 4, HAL_MAX_DELAY);
-		state = HAL_SPI_Receive(&hspi2, receive, (EE_SIZE_PAGE - (addr&0xFF)), HAL_MAX_DELAY);
-
-		EE_SPI_Disable();
-
-		//Changement de page
-		uint16_t page = (addr >> 8) & 0x7FF;
-		page++;
-
-		if(page > EE_LAST_PAGE)
-		{
-			//Revenir sur la première page
-			page = 0x00;
-		}
-
-		send[1] = (page >> 8) & 0x0F;
-		send[2] = page & 0xFF;
-		send[3] = 0x00;
-
-		while(EE_isEEPROMBusy());
-
-		state = HAL_SPI_Transmit(&hspi2, send, 4, HAL_MAX_DELAY);
-		state = HAL_SPI_Receive(&hspi2, &receive[(EE_SIZE_PAGE - (addr&0xFF))], length - (EE_SIZE_PAGE - (addr&0xFF)), HAL_MAX_DELAY);
-
-	}
-	else
-	{
-		//Lecture sur une page
-		send[0] = READ;
-
-		//address setting 24 bits of address
-		send[1] = (addr >> 16) & 0x0F;
-		send[2] = (addr >> 8) & 0xFF;
-		send[3] = addr & 0xFF;
-
-		while(EE_isEEPROMBusy());
-
-		state = HAL_SPI_Transmit(&hspi2, send, 4, HAL_MAX_DELAY);
-		state = HAL_SPI_Receive(&hspi2, receive, length, HAL_MAX_DELAY);
-	}
-
+	state = HAL_SPI_Transmit(&hspi2, send, 4, HAL_MAX_DELAY);
+	state = HAL_SPI_Receive(&hspi2, receive, length, HAL_MAX_DELAY);
 
 	EE_SPI_Disable();
 
@@ -260,7 +220,7 @@ HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint8_t length)
 uint8_t EE_isEEPROMBusy()
 {
 	uint8_t state;
-	uint8_t status;
+	uint8_t status = 0;
 
 	uint8_t buf = WRBP;
 
