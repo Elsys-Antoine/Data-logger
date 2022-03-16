@@ -35,11 +35,22 @@ extern "C" {
 #ifdef __DEBUG__
 #include "debug_print.h"
 #endif
+
+#include "RTC.h"
+#include "Eeprom.h"
+#include "TemperatureSensor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-UART_HandleTypeDef huart2;
+extern ADC_HandleTypeDef hadc1;
+
+extern I2C_HandleTypeDef hi2c1;
+
+extern SPI_HandleTypeDef hspi2;
+
+extern UART_HandleTypeDef huart2;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -68,6 +79,8 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define ADC1_VCC_Pin GPIO_PIN_6
+#define ADC1_VCC_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
