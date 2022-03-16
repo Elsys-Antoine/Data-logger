@@ -68,18 +68,14 @@ typedef enum
  */
 HAL_StatusTypeDef EE_Init(uint16_t status);
 
-HAL_StatusTypeDef EE_SetWriteEnable();
-HAL_StatusTypeDef EE_ResetWriteEnable();
 
 HAL_StatusTypeDef EE_WriteStatusRegister(uint16_t status);
 HAL_StatusTypeDef EE_ReadStatusRegister(uint16_t * status);
-HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint8_t length);
-HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint8_t length);
-
-uint8_t EE_isEEPROMBusy();
+HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint16_t length);
+HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint16_t length);
 
 void EE_getID(uint8_t *);
 
-void EE_SPI_Disable();
+
 
 #endif /* INC_EEPROM_H_ */

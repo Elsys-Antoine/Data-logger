@@ -36,7 +36,7 @@ uint8_t bin2bcd(uint8_t value);
  * RTC_Date		:	Structure of RTC date
  * squareWave	:	Shape of the SWQ/OUT pin of the RTC
  * @return
- * None
+ * HAL_StatusTypeDef
  */
 HAL_StatusTypeDef RTC_Init(RTC_Date_t RTC_Date, SQW_t squareWave)
 {

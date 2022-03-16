@@ -121,7 +121,6 @@ int main(void)
   SQW_t squareWave = SQW_OFF_0;
 
   RTC_Init(RTC_Date_init, squareWave);
-  TS_Init();
 
   while (1)
   {
@@ -139,7 +138,7 @@ int main(void)
 	  tmp[5] = RTC_Date.minutes;
 	  tmp[6] = RTC_Date.seconds;
 
-	//  EE_Write(addr, tmp, 7);
+	  EE_Write(addr, tmp, 7);
 	  EE_Read(addr, receive, 7);
 
 	  EE_getID(id);
