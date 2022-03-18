@@ -79,8 +79,6 @@ int main(void)
 
 	uint32_t addr = 0;
 	uint8_t tmp[7];
-	uint8_t receive[7];
-	uint8_t id[5];
 	uint32_t temperature;
 	RTC_Date_t RTC_Date;
 	RTC_Date_t RTC_Date_init = {22, 12, 24, 1, 9, 02, 56, 0, 0};
@@ -123,39 +121,61 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-
   RTC_Init(RTC_Date_init, squareWave);
 
   while (1)
   {
-	  temperature = TS_getTemperature();
-
-	  if(addr >= 0x7FFFF) addr = 0;
-
 	  RTC_getDate(&RTC_Date);
 
-	  tmp[0] = RTC_Date.dateNumber;
-	  tmp[1] = RTC_Date.month;
-	  tmp[2] = RTC_Date.year;
-	  tmp[3] = RTC_Date.day;
-	  tmp[4] = RTC_Date.hour;
-	  tmp[5] = RTC_Date.minutes;
-	  tmp[6] = RTC_Date.seconds;
+	  if(RTC_Date.seconds == 0)
+	  {
+		  //Ajout d'une valeur en EEPROM
+		  temperature = TS_getTemperature();
 
-	  EE_Write(addr, tmp, 7);
-	  EE_Read(addr, receive, 7);
+		  tmp[0] = RTC_Date.seconds;
+		  tmp[1] = RTC_Date.minutes;
+		  tmp[2] = RTC_Date.hour;
+		  if(RTC_Date.hourMode != AM_PM_NONE)
+		  {
+			  tmp[3] = RTC_Date.timeMode;
+			  tmp[4] = RTC_Date.dateNumber;
+			  tmp[5] = RTC_Date.month;
+			  tmp[6] = RTC_Date.year;
+			  tmp[7] = temperature;
 
-	  EE_getID(id);
+			  EE_Write(addr, tmp, 8);
+
+			  addr += 8;
+			  if(addr >= 0x7FFFF) addr = 0;
+
+		  }
+		  else
+		  {
+			  tmp[3] = RTC_Date.dateNumber;
+			  tmp[4] = RTC_Date.month;
+			  tmp[5] = RTC_Date.year;
+
+			  tmp[6] = temperature;
+
+			  EE_Write(addr, tmp, 7);
+
+			  addr += 7;
+			  if(addr >= 0x7FFFF) addr = 0;
+
+		  }
+
+#ifdef __DEBUG__
+		  printf("Temperature written : %ld\r\n", temperature);
+#endif
+
+	  }
 
 #ifdef __DEBUG__
 	  //	dd/mm/aaaa - day - hh:mm:ss
-	  printf("\r\n0x%X 0x%X 0x%X 0x%X 0x%X 		|	Temperature : %ld°C\r\n", id[0], id[1], id[2], id[3], id[4], temperature);
-	  printf("%02d/%02d/20%02d - %d - %02d:%02d:%02d", RTC_Date.dateNumber, RTC_Date.month, RTC_Date.year, RTC_Date.day, RTC_Date.hour, RTC_Date.minutes, RTC_Date.seconds );
-
-	  printf("	|	%02d/%02d/20%02d - %d - %02d:%02d:%02d\r\n", receive[0], receive[1], receive[2], receive[3], receive[4], receive[5], receive[6]);
+	  printf("%02d/%02d/20%02d - %d - %02d:%02d:%02d\r\n", RTC_Date.dateNumber, RTC_Date.month, RTC_Date.year, RTC_Date.day, RTC_Date.hour, RTC_Date.minutes, RTC_Date.seconds);
 #endif
-	  addr+=7;
-	  HAL_Delay(2000);
+
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
