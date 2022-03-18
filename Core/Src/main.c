@@ -76,7 +76,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
 	//Définition des variables
-
+	uint8_t lastSecondsCheck = 0;
 	uint32_t addr = 0;
 	uint8_t tmp[7];
 	uint32_t temperature;
@@ -127,8 +127,10 @@ int main(void)
   {
 	  RTC_getDate(&RTC_Date);
 
-	  if(RTC_Date.seconds == 0)
+	  if(RTC_Date.seconds == 0 &&  lastSecondsCheck == 59)
 	  {
+		  lastSecondsCheck = RTC_Date.seconds;
+
 		  //Ajout d'une valeur en EEPROM
 		  temperature = TS_getTemperature();
 
@@ -170,12 +172,13 @@ int main(void)
 
 	  }
 
+
+	  lastSecondsCheck = RTC_Date.seconds;
 #ifdef __DEBUG__
 	  //	dd/mm/aaaa - day - hh:mm:ss
 	  printf("%02d/%02d/20%02d - %d - %02d:%02d:%02d\r\n", RTC_Date.dateNumber, RTC_Date.month, RTC_Date.year, RTC_Date.day, RTC_Date.hour, RTC_Date.minutes, RTC_Date.seconds);
 #endif
-
-	  HAL_Delay(1000);
+	  HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
