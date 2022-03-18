@@ -30,7 +30,19 @@ uint8_t EE_isEEPROMBusy();
 void EE_SPI_Disable();
 
 /***************************************************************************************/
-
+/*
+ * EE_Init
+ * @brief
+ * Initialize the EEPROM module
+ * - Flush the RX fifo
+ * - Write the new status
+ * @param
+ * status : Value of the status register of the EEPROM
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_Init(uint16_t status)
 {
 	HAL_StatusTypeDef state;
@@ -44,6 +56,42 @@ HAL_StatusTypeDef EE_Init(uint16_t status)
 	return state;
 }
 
+
+/*
+ * EE_isEEPROMBusy
+ * @brief
+ * Read the bit BSY/RDY bit
+ * @param
+ * none
+ * @return
+ * uint8_t	: 	0x00 = Ready
+ * 				0xFF = Busy
+ */
+uint8_t EE_isEEPROMBusy()
+{
+	uint8_t status = 0;
+
+	uint8_t buf = WRBP;
+
+	HAL_SPI_Transmit(&hspi2, &buf, 1, HAL_MAX_DELAY);
+	HAL_SPI_Receive(&hspi2, &status, 1, HAL_MAX_DELAY);
+	EE_SPI_Disable();
+
+	return status;
+}
+
+
+/*
+ * EE_SetWriteEnable
+ * @brief
+ * Enable the writing process of the EEPROM
+ * @param
+ * none
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_SetWriteEnable()
 {
 	HAL_StatusTypeDef state;
@@ -57,6 +105,20 @@ HAL_StatusTypeDef EE_SetWriteEnable()
 	return state;
 }
 
+
+/*
+ * EE_ResetWriteEnable
+ * @brief
+ * Disable the writing process of the EEPROM
+ *
+ * This function is not used. The flag Write Enable of the EEPROM is reset after each writing cycle by hardware
+ * @param
+ * none
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_ResetWriteEnable()
 {
 	HAL_StatusTypeDef state;
@@ -71,6 +133,20 @@ HAL_StatusTypeDef EE_ResetWriteEnable()
 	return state;
 }
 
+
+/*
+ * EE_WriteStatusRegister
+ * @brief
+ * Write the status register
+ *
+ * Call the function EE_setWriteEnable()
+ * @param
+ * status : Value of the status register of the EEPROM
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_WriteStatusRegister(uint16_t status)
 {
 	HAL_StatusTypeDef state;
@@ -91,6 +167,18 @@ HAL_StatusTypeDef EE_WriteStatusRegister(uint16_t status)
 	return state;
 }
 
+
+/*
+ * EE_ReadStatusRegister
+ * @brief
+ * Read the status register
+ * @param
+ * ptr * status : pointer of a variable to save the status register of the EEPROM
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_ReadStatusRegister(uint16_t * status)
 {
 	HAL_StatusTypeDef state;
@@ -107,6 +195,24 @@ HAL_StatusTypeDef EE_ReadStatusRegister(uint16_t * status)
 	return state;
 }
 
+
+/*
+ * EE_Write
+ * @brief
+ * Write up to 2^16 Bytes to EEPROM memory.
+ * The EEPROM is able to write up to 256 Bytes with one write command.
+ * This function cycles until there is no Bytes left to write.
+ *
+ * Call the function EE_setWriteEnable() before each write cycle
+ * @param
+ * addr 	:	Start address of the the writing process
+ * data		:	Buffer of data to be written
+ * length	:	Number of Bytes to be written
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint16_t length)
 {
 	HAL_StatusTypeDef state;
@@ -188,6 +294,19 @@ HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint16_t length)
 	return state;
 }
 
+/*
+ * EE_Read
+ * @brief
+ * Read the EEPROM memory
+ * @param
+ * addr			:	Address of start of reading
+ * ptr * data 	:	Pointer of buffer where the data will be saved
+ * length		:	Number of Bytes to be read
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint16_t length)
 {
 	HAL_StatusTypeDef state;
@@ -214,30 +333,19 @@ HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint16_t length)
 }
 
 
-uint8_t EE_isEEPROMBusy()
-{
-	uint8_t state;
-	uint8_t status = 0;
-
-	uint8_t buf = WRBP;
-
-	HAL_SPI_Transmit(&hspi2, &buf, 1, HAL_MAX_DELAY);
-	HAL_SPI_Receive(&hspi2, &status, 1, HAL_MAX_DELAY);
-	EE_SPI_Disable();
-
-	if(status)
-	{
-		state = EEPROM_BUSY;
-	}
-	else
-	{
-		state = EEPROM_NOT_BUSY;
-	}
-
-	return state;
-}
-
-
+/*
+ * EE_getID
+ * @brief
+ * Read the ID register.
+ * These registers are programmed at manufacturing and are read only.
+ * The value of these registers is available in the datasheet
+ * @param
+ * ptr * id : pointer of a variable to save the id register of the EEPROM (5 Bytes)
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 void EE_getID(uint8_t * id)
 {
 	uint8_t buf = SPID;
@@ -248,7 +356,16 @@ void EE_getID(uint8_t * id)
 	EE_SPI_Disable();
 }
 
-
+/*
+ * EE_SPI_Disable
+ * @brief
+ * Disable the SPI and let the lign CS
+ * It is used after each command
+ * @param
+ * none
+ * @return
+ * none
+ */
 void EE_SPI_Disable()
 {
 	//Check if FTLVL is equal to 0

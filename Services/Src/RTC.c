@@ -36,7 +36,9 @@ uint8_t bin2bcd(uint8_t value);
  * RTC_Date		:	Structure of RTC date
  * squareWave	:	Shape of the SWQ/OUT pin of the RTC
  * @return
- * HAL_StatusTypeDef
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
  */
 HAL_StatusTypeDef RTC_Init(RTC_Date_t RTC_Date, SQW_t squareWave)
 {
@@ -61,6 +63,19 @@ HAL_StatusTypeDef RTC_Init(RTC_Date_t RTC_Date, SQW_t squareWave)
 
 	return state;
 }
+
+/*
+ * RTC_changeHourMode
+ * @brief
+ * Change the mode of the hour between 12/24H
+ * This function saves the actual hour and change the mode before reprogramming the hour in the new format
+ * @param
+ * None
+ * @return
+ * HAL_StatusTypeDef : Status of the communication
+ * 					- HAL_OK
+ * 					- HAL_ERROR
+ */
 
 HAL_StatusTypeDef RTC_changeHourMode(void)
 {

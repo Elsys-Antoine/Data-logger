@@ -18,18 +18,15 @@
 /*
  * PUBLIC CONSTANT
  */
-
-#define EEPROM_NOT_BUSY			0
-#define EEPROM_BUSY				1
-
-#define EEPROM_BUSY_FLAG_MASK	0x0001
-
-
 #define EEPROM_SPI_DUMMY		0x5555
 
-#define EE_SIZE_PAGE			0x100
-#define EE_LAST_PAGE			0x7FF
+#define EE_SIZE_PAGE			0x100		// Size of one page of the EEPROM memory (256 octets)
+#define EE_LAST_PAGE			0x7FF		// Address of the last page available of the EEPROM memory (2048)
 
+
+/*
+ * PUBLIC TYPE DEFINITION
+ */
 typedef enum
 {
 	RDSR	= 0x05,		// Read Status register
@@ -56,9 +53,7 @@ typedef enum
 
 	SRST	= 0x7C		// Software Device Reset
 }EE_opcode_t;
-/*
- * PUBLIC TYPE DEFINITION
- */
+
 /*
  * PUBLIC GLOBAL VARIABLE
  */
@@ -68,14 +63,11 @@ typedef enum
  */
 HAL_StatusTypeDef EE_Init(uint16_t status);
 
-
 HAL_StatusTypeDef EE_WriteStatusRegister(uint16_t status);
 HAL_StatusTypeDef EE_ReadStatusRegister(uint16_t * status);
 HAL_StatusTypeDef EE_Write(uint32_t addr, uint8_t * data, uint16_t length);
 HAL_StatusTypeDef EE_Read(uint32_t addr, uint8_t * data, uint16_t length);
 
 void EE_getID(uint8_t *);
-
-
 
 #endif /* INC_EEPROM_H_ */

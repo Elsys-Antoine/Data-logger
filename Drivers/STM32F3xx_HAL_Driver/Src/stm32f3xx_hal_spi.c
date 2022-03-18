@@ -1019,12 +1019,14 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
   {
     hspi->State = HAL_SPI_STATE_BUSY_RX;
     /* Call transmit-receive function to send Dummy data on Tx line and generate clock on CLK line */
+    /* USER CODE BEGIN 0*/
     uint8_t tData[Size];
     for(uint8_t i = 0; i<Size; i++)
     {
     	//Dummy Data
     	tData[i] = 0xFF;
     }
+    /* USER CODE END 0*/
     return HAL_SPI_TransmitReceive(hspi, tData, pData, Size, Timeout);
   }
 

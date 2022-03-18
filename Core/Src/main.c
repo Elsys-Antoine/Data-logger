@@ -74,12 +74,18 @@ static void MX_ADC1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+	//Définition des variables
+
 	uint32_t addr = 0;
 	uint8_t tmp[7];
 	uint8_t receive[7];
 	uint8_t id[5];
 	uint32_t temperature;
-  /* USER CODE END 1 */
+	RTC_Date_t RTC_Date;
+	RTC_Date_t RTC_Date_init = {22, 12, 24, 1, 9, 02, 56, 0, 0};
+	SQW_t squareWave = SQW_OFF_0;
+	/* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -116,9 +122,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  RTC_Date_t RTC_Date;
-  RTC_Date_t RTC_Date_init = {22, 12, 24, 1, 9, 02, 56, 0, 0};
-  SQW_t squareWave = SQW_OFF_0;
+
 
   RTC_Init(RTC_Date_init, squareWave);
 
@@ -145,7 +149,7 @@ int main(void)
 
 #ifdef __DEBUG__
 	  //	dd/mm/aaaa - day - hh:mm:ss
-	  printf("\r\n0x%X 0x%X 0x%X 0x%X 0x%X 		|	%ld\r\n", id[0], id[1], id[2], id[3], id[4], temperature);
+	  printf("\r\n0x%X 0x%X 0x%X 0x%X 0x%X 		|	Temperature : %ld°C\r\n", id[0], id[1], id[2], id[3], id[4], temperature);
 	  printf("%02d/%02d/20%02d - %d - %02d:%02d:%02d", RTC_Date.dateNumber, RTC_Date.month, RTC_Date.year, RTC_Date.day, RTC_Date.hour, RTC_Date.minutes, RTC_Date.seconds );
 
 	  printf("	|	%02d/%02d/20%02d - %d - %02d:%02d:%02d\r\n", receive[0], receive[1], receive[2], receive[3], receive[4], receive[5], receive[6]);

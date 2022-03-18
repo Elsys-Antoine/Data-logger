@@ -39,7 +39,7 @@
  * None
  *
  * @return
- * Value of the temperature
+ * uint32_t : converted value of the temperature in °C
  */
 uint32_t TS_getTemperature(void)
 {

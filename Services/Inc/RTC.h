@@ -18,24 +18,23 @@
 /*
  * PUBLIC CONSTANT
  */
-/*
- * PUBLIC TYPE DEFINITION
- */
-
 #define RTC_addr	(0x68&0xFF)<<1
 
 #define HOUR_TYPE_24H	0
 #define HOUR_TYPE_12H	1
 
 
+/*
+ * PUBLIC TYPE DEFINITION
+ */
 typedef enum
 {
-	SQW_OFF_0 	= 0x00,
-	SQW_OFF_1 	= 0x80,
-	SQW_1Hz		= 0x10,
-	SQW_4kHz	= 0x11,
-	SQW_8kHz	= 0x12,
-	SQW_32kHz	= 0x13
+	SQW_OFF_0 	= 0x00,			// Signal squarewave is off and the lign is low
+	SQW_OFF_1 	= 0x80,			// Signal squarewave is off and the lign is high
+	SQW_1Hz		= 0x10,			// Signal squarewave at a frequency of 1Hz
+	SQW_4kHz	= 0x11,			// Signal squarewave at a frequency of 4kHz
+	SQW_8kHz	= 0x12,			// Signal squarewave at a frequency of 8kHz
+	SQW_32kHz	= 0x13			// Signal squarewave at a frequency of 32kHz
 }SQW_t;
 
 typedef enum
